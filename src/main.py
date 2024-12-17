@@ -13,10 +13,11 @@ logging.basicConfig(
 )
 
 required_env_vars = [
-    "AWS_REGION",
+    "AWS_DEFAULT_REGION",
     "KMS_ALIAS",
     "AWS_ACCESS_KEY_ID",
     "AWS_SECRET_ACCESS_KEY",
+    "MFA_SERIAL",
 ]
 
 
@@ -32,11 +33,11 @@ def load_env() -> dict:
 
 
 # access sts to get temporary security token.
-def get_security_token(access_key, secret_key, mfa_code, mfa_name, duration=3600):
+def get_security_token(access_key, secret_key, mfa_name, mfa_code, duration=3600):
     sts_client = boto3.client(
         'sts',
         aws_access_key_id=access_key,
-        aws_secret_access_key=secret_key
+        aws_secret_access_key=secret_key,
     )
 
     # get temporary credentials
@@ -57,13 +58,13 @@ def main():
 
     # get mfa things
     mfa_code = sys.argv[1]
-    mfa_name = os.getenv("MFA_SERIAL")
+    mfa_name = env_variables['MFA_SERIAL']
 
     # get temporary credentials using mfa
-    credentials = get_security_token(env_variables['AWS_ACCESS_KEY_ID'], env_variables['AWS_SECRET_ACCESS_KEY'], mfa_code, mfa_name)
+    credentials = get_security_token(env_variables['AWS_ACCESS_KEY_ID'], env_variables['AWS_SECRET_ACCESS_KEY'], mfa_name, mfa_code)
     
     # setup KMS client
-    kms = KeyManagementService.from_client(env_variables['AWS_REGION'], credentials)
+    kms = KeyManagementService.from_client(env_variables['AWS_DEFAULT_REGION'], credentials)
 
     # Test data
     data = "This is a test message."
@@ -71,10 +72,10 @@ def main():
 
     ### Encrypt and decrypt
     encrypted_data = kms.encrypt(env_variables['KMS_ALIAS'], data)
-    logging.info(f"Encrypted data: {encrypted_data}")
+    # logging.info(f"Encrypted data: {encrypted_data}")
 
     decrypted_data = kms.decrypt(encrypted_data)
-    logging.info(f"Decrypted data: {decrypted_data}")
+    # logging.info(f"Decrypted data: {decrypted_data}")
 
 
 if __name__ == '__main__':
