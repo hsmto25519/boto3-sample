@@ -4,6 +4,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 CHARACTER_ENCODING = "utf-8"
+ENCRYPTION_CONTEXT = { "System": "Test" }
 
 # no error handling for simplicity
 class KeyManagementService:
@@ -30,7 +31,7 @@ class KeyManagementService:
 
 
     def encrypt(self, key_id: str, text: str) -> str:
-        response = self.kms_client.encrypt(KeyId=key_id, Plaintext=text.encode(CHARACTER_ENCODING))
+        response = self.kms_client.encrypt(KeyId=key_id, Plaintext=text.encode(CHARACTER_ENCODING), EncryptionContext=ENCRYPTION_CONTEXT)
         logger.info(f"The string was encrypted with algorithm {response['EncryptionAlgorithm']}")
         logging.info(f"Encrypted data: {response["CiphertextBlob"]}")
 
@@ -38,7 +39,7 @@ class KeyManagementService:
 
 
     def decrypt(self, ciphertext: bytes) -> str:
-        response = self.kms_client.decrypt(CiphertextBlob=ciphertext)
+        response = self.kms_client.decrypt(CiphertextBlob=ciphertext, EncryptionContext=ENCRYPTION_CONTEXT)
         plaintext = response["Plaintext"].decode(CHARACTER_ENCODING)
         logger.info(f"Decrypted data: {plaintext}")
 

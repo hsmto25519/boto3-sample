@@ -71,11 +71,12 @@ def main():
     logging.info(f"Original data: {data}")
 
     ### Encrypt and decrypt
-    encrypted_data = kms.encrypt(env_variables['KMS_ALIAS'], data)
-    # logging.info(f"Encrypted data: {encrypted_data}")
 
+    # The key is in a pending deletion state.
+    # encrypted_data = kms.encrypt("953a1cc8-e60a-4748-95d6-9b3aa8cdd9e4", data)
+
+    encrypted_data = kms.encrypt(env_variables['KMS_ALIAS'], data)
     decrypted_data = kms.decrypt(encrypted_data)
-    # logging.info(f"Decrypted data: {decrypted_data}")
 
 
 if __name__ == '__main__':
